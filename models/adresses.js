@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   };
   adresses.init({
-    user_id: DataTypes.INTEGER,
+    userId: DataTypes.INTEGER,
     home_adress1: DataTypes.STRING,
     home_adress2: DataTypes.STRING,
     work_adress: DataTypes.STRING

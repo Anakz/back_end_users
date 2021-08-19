@@ -7,6 +7,9 @@ var server = express();
 //Get the model users
 const { users } = require('./models')
 
+//Get the model adresses
+const { adresses } = require('./models')
+
 //Configutr routes
 server.get('/', function (req , res){
     res.setHeader('Content-type', 'text/html')
@@ -14,10 +17,11 @@ server.get('/', function (req , res){
 })
 
 //Use the cors
-const cors = require("cors")
+const cors = require("cors");
+// const { where } = require('sequelize/types');
 server.use(
     cors({
-        origin:"http://localhost:3030",
+        origin:"http://localhost:3000",
     })
 )
 
@@ -33,15 +37,27 @@ server.get("/select", (req,res) => {
     //res.send("succes");
 });
 
-//to add a user to the table users
-server.get("/insert", (req, res) => {
+//to list all the user's adress
+server.get("/selectAdress", (req,res) => {
+    adresses.findAll() // {where: { id : 3 }} 
+    .then((adresses)=> {
+        res.send(adresses);
+    })
+    .catch((err) =>{
+        console.log(err);
+    });
+    //res.send("succes");
+});
+
+//to add a user to the table users /:username/:email/:phone/:website/:comapny_name
+server.post("/insert", (req, res) => {
     users.create({
-        name : "Anas AKZAZ",
-        username : "NIKOLA",
-        email : "anasakzaz23@gmail.com",
-        phone: "+212 655 508 814",
-        website: "www.anasakzaz.com",
-        company_name: "Nikola's company",
+        name : req.body.name,
+        username : req.body.username,
+        email : req.body.email,
+        phone: req.body.phone,
+        website: req.body.website,
+        company_name: req.body.company_name,
     }).catch((err) => {
         if (err) {
             console.log("erreur : "+err);
