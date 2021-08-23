@@ -4,6 +4,12 @@ var express = require('express')
 //instantiate server
 var server = express();
 
+const bodyParser = require("body-parser");
+server.use(bodyParser.urlencoded({
+    extended: true
+}));
+server.use(bodyParser.json());
+
 //Get the model users
 const { users } = require('./models')
 
@@ -26,7 +32,7 @@ server.use(
 )
 
 //to list all the users
-server.get("/select", (req,res) => {
+server.get("/allusers", (req,res) => {
     users.findAll()
     .then((users)=> {
         res.send(users);
@@ -36,9 +42,47 @@ server.get("/select", (req,res) => {
     });
     //res.send("succes");
 });
+//to list one user
+server.post("/OneUser", (req,res) => {
+    const {body} = req ;
+    if (body.id === undefined) {
+        return false
+    }
+    else
+    {
+        users.findOne({where : {id : body.id}} )
+        .then((users)=> {
+            res.send(users);
+        })
+        .catch((err) =>{
+            console.log(err);
+        });
+    }
+    
+    //res.send("succes");
+});
+
+//to list one adress
+server.post("/OneAdress", (req,res) => {
+    const {body} = req ;
+    if (body.id === undefined) {
+        return false
+    }
+    else
+    {
+        adresses.findOne({where : {userId : body.id}} )
+        .then((adresse)=> {
+            res.send(adresse);
+        })
+        .catch((err) =>{
+            console.log(err);
+        });
+    }
+    //res.send("succes");
+});
 
 //to list all the user's adress
-server.get("/selectAdress", (req,res) => {
+server.get("/alladresses", (req,res) => {
     adresses.findAll() // {where: { id : 3 }} 
     .then((adresses)=> {
         res.send(adresses);
@@ -51,25 +95,49 @@ server.get("/selectAdress", (req,res) => {
 
 //to add a user to the table users /:username/:email/:phone/:website/:comapny_name
 server.post("/insert", (req, res) => {
+    const {body} = req ;
+    var U
+
     users.create({
-        name : req.body.name,
-        username : req.body.username,
-        email : req.body.email,
-        phone: req.body.phone,
-        website: req.body.website,
-        company_name: req.body.company_name,
-    }).catch((err) => {
+        name : body.name,
+        username : body.username,
+        email : body.email,
+        phone: body.phone,
+        website: body.website,
+        company_name: body.company_name,
+    }).then((users)=> {
+        
+        U = users.id
+        adresses.create({
+            userId : U,//103
+            home_adress1 : body.home_adress1,
+            home_adress2 : body.home_adress2,
+            work_adress : body.work_adress,
+        }).catch((err) => {
+            if (err) {
+                console.log("erreur : "+err);
+            }
+        });
+    })
+    .catch((err) => {
         if (err) {
             console.log("erreur : "+err);
         }
     });
+    
+
     res.send("end insert");
 });
 
 //To delete a user
-server.get("/delete/:idd", (req, res) =>{
-    users.destroy({where : {id : req.params.idd} });
-    res.send("delete with success");
+server.delete("/delete/:id", (req, res) =>{
+    // const {body} = req ;
+    // res.json(body)
+    // res.end()
+    // users.destroy({id : body.id} );
+    
+    adresses.destroy({where : {userId : req.params.id} }).then(users.destroy({where : {id : req.params.id} }));
+    res.send("delete with success server.js "+body.id);
 })
 
 //Create
